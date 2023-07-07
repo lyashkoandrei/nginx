@@ -1,0 +1,41 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    root /var/www/domain;
+    index index.php index.html index.htm;
+
+    server_name domain;
+
+    location = /favicon.ico {
+                log_not_found off;
+                access_log off;
+    }
+
+    location = /robots.txt {
+                allow all;
+                log_not_found off;
+                access_log off;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+       include fastcgi_params;
+       fastcgi_intercept_errors on;
+       fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+       fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       fastcgi_send_timeout 7200;
+       fastcgi_read_timeout 7200;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                expires max;
+                log_not_found off;
+    }
+    location ~ ^/wp-json/ {
+        rewrite ^/wp-json/(.*?)$ /?rest_route=/$1 last;
+    }
+}
